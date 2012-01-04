@@ -7,7 +7,7 @@ class Phactory_Blueprint {
     protected $_sequence;
 
     public function __construct($name, $defaults, $associations = array()) {
-        $this->_table = new Phactory_Table($name); 
+        $this->_table = new Phactory_Table($name);
         $this->_defaults = $defaults;
         $this->_sequence = new Phactory_Sequence();
 
@@ -70,12 +70,12 @@ class Phactory_Blueprint {
                 $assoc_keys[$fk_column] = $row->$to_column;
             }
         }
-    
+
         $data = array_merge($this->_defaults, $assoc_keys);
 
         $this->_evalSequence($data);
 
-        $built = new Phactory_Row($this->_table, $data); 
+        $built = new Phactory_Row($this->_table, $data);
 
         if($overrides) {
             foreach($overrides as $field => $value) {
@@ -93,7 +93,7 @@ class Phactory_Blueprint {
      * @param array $associated  [table name] => [Phactory_Row]
      */
     public function create($overrides = array(), $associated = array()) {
-        $built = $this->build($overrides, $associated); 
+        $built = $this->build($overrides, $associated);
 
         // process any many-to-many associations
         $many_to_many = array();
@@ -108,7 +108,7 @@ class Phactory_Blueprint {
         }
 
         $built->save();
-        
+
         if($many_to_many) {
             $this->_associateManyToMany($built, $many_to_many);
         }
@@ -123,7 +123,7 @@ class Phactory_Blueprint {
         $db_util = Phactory_DbUtilFactory::getDbUtil();
         $db_util->disableForeignKeys();
 
-    	try {
+        try {
             $sql = "DELETE FROM {$this->_table->getName()}";
             Phactory::getConnection()->exec($sql);
         } catch(Exception $e) { }
@@ -146,10 +146,10 @@ class Phactory_Blueprint {
             if(false !== strpos($value, '$')) {
                 $value = strtr($value, array('$n' => $n));
             }
-            
+
             if(preg_match_all('/#\{(.+)\}/U', $value, $matches)) {
                 foreach($matches[1] as $match) {
-                    $value = preg_replace('/#\{.+\}/U', eval('return ' . $match . ';'), $value, 1);                    
+                    $value = preg_replace('/#\{.+\}/U', eval('return ' . $match . ';'), $value, 1);
                 }
             }
         }
@@ -163,14 +163,16 @@ class Phactory_Blueprint {
                 $join_table = $assoc->getJoinTable();
                 $from_join_column = $assoc->getFromJoinColumn();
                 $to_join_column = $assoc->getToJoinColumn();
-                
-                $sql = "INSERT INTO `$join_table` 
-                        (`$from_join_column`, `$to_join_column`)
+
+                // Quote table names as underlying DB expects it
+                $sql = "INSERT INTO ".$this->_table->quoteIdentifier($join_table)."
+                        (".$this->_table->quoteIdentifier($from_join_column).", ".$this->_table->quoteIdentifier($to_join_column).")
                         VALUES
                         (:from_id, :to_id)";
+
                 $stmt = $pdo->prepare($sql);
                 $r = $stmt->execute(array(':from_id' => $row->getId(), ':to_id' => $to_row->getId()));
-                
+
                 if($r === false){
                     $error= $stmt->errorInfo();
                     Phactory_Logger::error('SQL statement failed: '.$sql.' ERROR MESSAGE: '.$error[2].' ERROR CODE: '.$error[1]);
