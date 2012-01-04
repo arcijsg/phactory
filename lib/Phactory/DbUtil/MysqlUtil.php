@@ -1,19 +1,23 @@
 <?php
 
-class Phactory_DbUtil_MysqlUtil {
-
-	public function __construct() {
-		$this->_pdo = Phactory::getConnection();
+class Phactory_DbUtil_MysqlUtil extends Phactory_DbUtil_Abstract
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->_quoteChar = '`';
     }
 
-	public function getPrimaryKey($table) {
-		$stmt = $this->_pdo->query("SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'");
-		$result = $stmt->fetch();
-		return $result['Column_name'];
-	}
+    public function getPrimaryKey($table) {
+        $table = $this->quoteIdentifier($table);
+        $stmt = $this->_pdo->query("SHOW KEYS FROM $table WHERE Key_name = 'PRIMARY'");
+        $result = $stmt->fetch();
+        return $result['Column_name'];
+    }
 
     public function getColumns($table) {
-        $stmt = $this->_pdo->query("DESCRIBE `$table`");
+        $table = $this->quoteIdentifier($table);
+        $stmt = $this->_pdo->query("DESCRIBE $table");
         $columns = array();
         while($row = $stmt->fetch()) {
             $columns[] = $row['Field'];

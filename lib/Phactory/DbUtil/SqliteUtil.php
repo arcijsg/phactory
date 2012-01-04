@@ -1,20 +1,19 @@
 <?php
 
-class Phactory_DbUtil_SqliteUtil{
+class Phactory_DbUtil_SqliteUtil  extends Phactory_DbUtil_Abstract
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->_quoteChar = '`';
+    }
 
-	protected $_pdo;
-
-	public function __construct()
-	{ 
-		$this->_pdo = Phactory::getConnection();
-	}
-	
-	public function getPrimaryKey($table)
-	{
-		$stmt = $this->_pdo->prepare("SELECT * FROM sqlite_master WHERE type='table' AND name=:name");
+    public function getPrimaryKey($table)
+    {
+        $stmt = $this->_pdo->prepare("SELECT * FROM sqlite_master WHERE type='table' AND name=:name");
         $stmt->execute(array(':name' => $table));
-		$result = $stmt->fetch();
-        $sql = $result['sql'];	
+        $result = $stmt->fetch();
+        $sql = $result['sql'];
 
         $matches = array();
         preg_match('/(\w+?)\s+\w+?\s+PRIMARY KEY/', $sql, $matches);
@@ -22,8 +21,8 @@ class Phactory_DbUtil_SqliteUtil{
         if(!$matches[1]) {
             return null;
         }
-		return $matches[1]; 
-	}
+        return $matches[1];
+    }
 
     public function getColumns($table) {
         $stmt = $this->_pdo->query("PRAGMA table_info($table)");
@@ -32,11 +31,5 @@ class Phactory_DbUtil_SqliteUtil{
             $columns[] = $row['name'];
         }
         return $columns;
-    }
-
-    public function disableForeignKeys() {
-    }
-
-    public function enableForeignKeys() {
     }
 }
