@@ -157,12 +157,12 @@ class Phactory {
         $params = array();
         foreach($byColumns as $field => $value)
         {
-            $equals[] = '`' . $field .'` = ?';
+            $equals[] = $table->quoteIdentifier($field) . ' = ?';
             $params[] = $value;
         }
 
         $where_sql = implode(' AND ', $equals);
-        $sql = "SELECT * FROM `" . $table->getName() . "` WHERE " . $where_sql;
+        $sql = "SELECT * FROM " . $table->quoteIdentifier($table->getName()) . " WHERE " . $where_sql;
 
         $stmt = self::$_pdo->prepare($sql);
         $r = $stmt->execute($params);
