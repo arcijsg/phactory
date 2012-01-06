@@ -97,7 +97,7 @@ class Phactory {
      * The row is saved to the database, and returned
      * as a Phactory_Row.
      *
-     * @param string $blueprint_name name of the blueprint to use 
+     * @param string $blueprint_name name of the blueprint to use
      * @param array $associations [table name] => [Phactory_Row]
      * @param array $overrides key => value pairs of column => value
      * @return object Phactory_Row
@@ -106,7 +106,7 @@ class Phactory {
         if(! ($blueprint = self::$_blueprints[$blueprint_name]) ) {
             throw new Exception("No blueprint defined for '$blueprint_name'");
         }
-            
+
         return $blueprint->create($overrides, $associations);
     }
 
@@ -115,7 +115,7 @@ class Phactory {
      * overriding some or all of the default values.
      * The row is not saved to the database.
      *
-     * @param string $blueprint_name name of the blueprint to use 
+     * @param string $blueprint_name name of the blueprint to use
      * @param array $associations [table name] => [Phactory_Row]
      * @param array $overrides key => value pairs of column => value
      * @return object Phactory_Row
@@ -130,7 +130,7 @@ class Phactory {
                 throw new Exception("ManyToMany associations cannot be used in Phactory::build()");
             }
         }
-            
+
         return $blueprint->build($overrides, $associations);
     }
 
@@ -138,11 +138,11 @@ class Phactory {
      * Get a row from the database as a Phactory_Row.
      * $byColumn is like array('id' => 123).
      *
-     * @param string $table_name name of the table 
+     * @param string $table_name name of the table
      * @param array $byColumn
      * @return object Phactory_Row
      */
-    public static function get($table_name, $byColumns) {		
+    public static function get($table_name, $byColumns) {
         return array_shift(self::getAll($table_name, $byColumns));
     }
 
@@ -152,15 +152,15 @@ class Phactory {
         }
 
         $table = new Phactory_Table($table_name);
-				
+
         $equals = array();
         $params = array();
-		foreach($byColumns as $field => $value)
-		{
-			$equals[] = '`' . $field .'` = ?';
-			$params[] = $value;
-		}
-								
+        foreach($byColumns as $field => $value)
+        {
+            $equals[] = '`' . $field .'` = ?';
+            $params[] = $value;
+        }
+
         $where_sql = implode(' AND ', $equals);
         $sql = "SELECT * FROM `" . $table->getName() . "` WHERE " . $where_sql;
 
@@ -232,17 +232,17 @@ class Phactory {
         return new Phactory_Association_OneToOne($to_table, $from_column, $to_column);
     }
 
-	/*
-	 * Specify an exception for table name inflection.
+    /*
+     * Specify an exception for table name inflection.
      * For example, if your table of fish is called 'fishes',
      * call setInflection('fish', 'fishes')
      *
-	 * @param string $singular singular form of the word.
-	 * @param string $plural plural form of the word.
-	 *
-	 */
-	public static function setInflection($singular, $plural){
-		Phactory_Inflector::addException($singular, $plural);
-	}
+     * @param string $singular singular form of the word.
+     * @param string $plural plural form of the word.
+     *
+     */
+    public static function setInflection($singular, $plural){
+        Phactory_Inflector::addException($singular, $plural);
+    }
 
 }
